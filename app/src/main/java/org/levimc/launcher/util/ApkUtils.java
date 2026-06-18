@@ -28,7 +28,7 @@ public class ApkUtils {
             if (info != null) {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(packageName) && versionName != null && !versionName.isEmpty()) {
+                if (("com.mojang.minecraftpe".equals(packageName)||"com.mojang.minecraftpet1".equals(packageName)) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                 }
             }
