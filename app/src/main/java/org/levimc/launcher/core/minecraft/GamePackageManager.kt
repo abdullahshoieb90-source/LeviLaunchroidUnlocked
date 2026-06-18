@@ -30,8 +30,10 @@ class GamePackageManager private constructor(
     private val nativeLibDir: String
     private val applicationInfo: ApplicationInfo
 
-    private val knownPackages = arrayOf(MinecraftLauncher.MC_PACKAGE_NAME)
-
+    private val knownPackages = arrayOf(
+    MinecraftLauncher.MC_PACKAGE_NAME,
+    "com.mojang.minecraftpet1"
+)
     private val requiredLibs = arrayOf(
         "libc++_shared.so",
         "libfmod.so",
