@@ -291,18 +291,25 @@ public class ApkInstaller {
     }
 
     private String extractApkVersionName(File apkFile) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            PackageInfo info = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
-            if (info != null) {
-    String pkgName = info.packageName;
-    String vName = info.versionName;
-    // يقرأ الإصدار مباشرة لأي حزمة يتم تمريرها للدالة دون التقييد بالنسخة الرسمية
-    if (vName != null && !vName.isEmpty()){ 
+    try {
+        PackageManager pm = context.getPackageManager();
+        PackageInfo info = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
 
-        } catch (Exception ignored) {
+        if (info != null) {
+            String pkgName = info.packageName;
+            String vName = info.versionName;
+
+            // يقرأ الإصدار مباشرة لأي حزمة يتم تمريرها للدالة
+            if (vName != null && !vName.isEmpty()) {
+                return vName;
+            }
         }
-        return "unknown_version";
+
+    } catch (Exception ignored) {
+        ignored.printStackTrace();
+    }
+
+    return "unknown_version";
     }
 
     private String getFileName(Uri uri) {
