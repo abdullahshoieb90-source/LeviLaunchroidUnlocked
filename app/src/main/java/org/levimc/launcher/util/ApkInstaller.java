@@ -295,12 +295,11 @@ public class ApkInstaller {
             PackageManager pm = context.getPackageManager();
             PackageInfo info = pm.getPackageArchiveInfo(apkFile.getAbsolutePath(), 0);
             if (info != null) {
-                String pkgName = info.packageName;
-                String vName = info.versionName;
-                if ("com.mojang.minecraftpe".equals(pkgName) && vName != null && !vName.isEmpty()) {
-                    return vName;
-                }
-            }
+    String pkgName = info.packageName;
+    String vName = info.versionName;
+    // يقرأ الإصدار مباشرة لأي حزمة يتم تمريرها للدالة دون التقييد بالنسخة الرسمية
+    if (vName != null && !vName.isEmpty())} 
+
         } catch (Exception ignored) {
         }
         return "unknown_version";
