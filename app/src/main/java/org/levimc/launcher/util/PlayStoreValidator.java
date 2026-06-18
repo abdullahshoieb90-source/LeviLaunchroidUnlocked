@@ -1,4 +1,4 @@
-herepackage org.levimc.launcher.util;
+package org.levimc.launcher.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
