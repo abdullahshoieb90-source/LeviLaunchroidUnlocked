@@ -2,53 +2,176 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "**"
+    tags:
+      - v*
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "**"
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: "recursive"
 
-    - name: Setup JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: gradle
+      - name: Prepare google-services.json
+        run: |
+          mkdir -p app
+          cat > app/google-services.json <<'JSON'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "ci-placeholder",
+              "storage_bucket": "ci-placeholder.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000000000",
+                  "android_client_info": {
+                    "package_name": "org.levimc.launcher"
+                  }
+                },
+                "oauth_client": [],
+                "api_key": [
+                  {
+                    "current_key": "AIzaSyCIOnlyPlaceholderKey"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": []
+                  }
+                }
+              }
+            ],
+            "configuration_version": "1"
+          }
+          JSON
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
 
-    - name: Install Build Tools
-      run: sdkmanager "build-tools;35.0.0"
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-    - name: Setup NDK
-      uses: nttld/setup-ndk@v1
-      with:
-        ndk-version: r28c
-        link-to-sdk: true
+      - name: Accept Licenses
+        run: yes | sdkmanager --licenses
 
-    - name: Setup Xmake
-      uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: "2.9.9"
+      - name: Install Build Tools 35.0.0
+        run: sdkmanager "build-tools;35.0.0"
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Verify installed SDK Packages
+        run: sdkmanager --list
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+      - name: Setup Xmake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: "2.9.9"
+          actions-cache-folder: ".xmake-cache"
+          actions-cache-key: "ubuntulinux-ci"
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: LeviLaunchroid-debug-apk
-        path: app/build/outputs/apk/debug/*.apk
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28c
+          link-to-sdk: true
+
+      - name: Grant Execute Permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Inject API Keys
+        env:
+          CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: echo "curseforge.api_key=${CF_API_KEY:-placeholder}" >> local.properties
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: LeviLauncher-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+
+      - name: Sign Release APK
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: kevin-david/zipalign-sign-android-release@v2
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY_STORE }}
+          alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+          zipAlign: true
+        env:
+          BUILD_TOOLS_VERSION: "35.0.0"
+
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/')
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK with tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          SIGNED_APK="${{ steps.sign_app.outputs.signedReleaseFile }}"
+          APK_DST="LeviLauncher-${TAG}-release.apk"
+          cp "$SIGNED_APK" "$APK_DST"
+          echo "Signed APK renamed to $APK_DST"
+
+      - name: Upload Signed APK Artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: LeviLauncher-${{ github.ref_name }}-release.apk
+          path: LeviLauncher-${{ github.ref_name }}-release.apk
+
+      - name: Release APK to GitHub Releases
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: LeviLauncher-${{ github.ref_name }}-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify Discord
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          APK_URL: "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/LeviLauncher-${{ github.ref_name }}-release.apk"
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d "{
+            \"embeds\": [{
+              \"title\": \"🚀 LeviLauncher Update!\",
+              \"description\": \"A new version of **LeviLaunchroid** is ready.\",
+              \"color\": 5814783,
+              \"thumbnail\": { \"url\": \"https://avatars.githubusercontent.com/u/78095377?s=200&v=4\" },
+              \"fields\": [
+                {
+                  \"name\": \"📦 Version\",
+                  \"value\": \"\`$TAG_NAME\`\",
+                  \"inline\": true
+                },
+                {
+                  \"name\": \"🔗 Download\",
+                  \"value\": \"[**Click here to download APK**]($APK_URL)\",
+                  \"inline\": true
+                }
+              ]
+            }]
+          }" \
+          "$DISCORD_WEBHOOK"
