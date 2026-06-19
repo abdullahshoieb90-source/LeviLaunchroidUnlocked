@@ -334,10 +334,7 @@ public class VersionManager {
 
         PackageManager pm = context.getPackageManager();
 
-        String[] mcPackages = {
-            MinecraftLauncher.MC_PACKAGE_NAME,
-            "com.mojang.minecraftpet1"
-        };
+        String[] mcPackages = MinecraftLauncher.MC_PACKAGE_NAMES;
 
         for (String pkgName : mcPackages) {
             try {

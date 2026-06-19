@@ -32,6 +32,7 @@
         tools:ignore="RequestInstallPackagesPolicy" />
     <queries>
         <package android:name="com.mojang.minecraftpe" />
+        <package android:name="com.mojang.minecraftpet1" />
     </queries>
 
     <application

@@ -30,10 +30,7 @@ class GamePackageManager private constructor(
     private val nativeLibDir: String
     private val applicationInfo: ApplicationInfo
 
-    private val knownPackages = arrayOf(
-    MinecraftLauncher.MC_PACKAGE_NAME,
-    "com.mojang.minecraftpet1"
-)
+    private val knownPackages = MinecraftLauncher.MC_PACKAGE_NAMES
     private val requiredLibs = arrayOf(
         "libc++_shared.so",
         "libfmod.so",
@@ -88,6 +85,11 @@ class GamePackageManager private constructor(
     }
 
     private fun detectGamePackage(): String? {
+        if (version != null && version.isInstalled && version.packageName != null) {
+            if (isPackageInstalled(version.packageName)) {
+                return version.packageName
+            }
+        }
         return knownPackages.firstOrNull { isPackageInstalled(it) }
     }
 

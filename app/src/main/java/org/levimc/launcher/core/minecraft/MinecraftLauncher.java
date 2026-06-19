@@ -40,6 +40,14 @@ public class MinecraftLauncher {
         this.context = context;
     }
 
+    public static boolean isMinecraftPackage(String packageName) {
+        if (packageName == null) return false;
+        for (String name : MC_PACKAGE_NAMES) {
+            if (name.equals(packageName)) return true;
+        }
+        return false;
+    }
+
     public static String abiToSystemLibDir(String abi) {
         if ("arm64-v8a".equals(abi)) return "arm64";
         if ("armeabi-v7a".equals(abi)) return "arm";
@@ -155,7 +163,7 @@ public class MinecraftLauncher {
 
     public static String getStorageProfileId(GameVersion version) {
         if (version == null) return LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
-        if (version.isInstalled) return LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
+        if (version.isInstalled) return version.packageName != null ? version.packageName : LauncherStorage.INSTALLED_MINECRAFT_PROFILE_ID;
         return LauncherStorage.sanitizeProfileId(version.directoryName);
     }
 
