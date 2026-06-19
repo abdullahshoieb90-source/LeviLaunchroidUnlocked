@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import org.levimc.launcher.core.minecraft.MinecraftLauncher;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +30,7 @@ public class ApkUtils {
             if (info != null) {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
-                if (("com.mojang.minecraftpe".equals(packageName)||"com.mojang.minecraftpet1".equals(packageName)) && versionName != null && !versionName.isEmpty()) {
+                if (MinecraftLauncher.isMinecraftPackage(packageName) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                 }
             }
@@ -53,7 +55,7 @@ public class ApkUtils {
                 String packageName = info.packageName;
                 String versionName = info.versionName;
 
-                if (("com.mojang.minecraftpe".equals(packageName)||"com.mojang.minecraftpet1".equals(packageName)) && versionName != null && !versionName.isEmpty()) {
+                if (MinecraftLauncher.isMinecraftPackage(packageName) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                 }
             }
@@ -79,7 +81,7 @@ public class ApkUtils {
                         try (OutputStream os = new FileOutputStream(tempApkFile)) {
                             byte[] buffer = new byte[131072];
                             int len;
-                            while ((len = zis.read(buffer)) != -1) {
+                            while ((len = is.read(buffer)) != -1) {
                                 os.write(buffer, 0, len);
                             }
                         }
@@ -89,7 +91,7 @@ public class ApkUtils {
                         if (info != null) {
                             String packageName = info.packageName;
                             String versionName = info.versionName;
-                            if (("com.mojang.minecraftpe".equals(packageName)||"com.mojang.minecraftpet1".equals(packageName)) && versionName != null && !versionName.isEmpty()) {
+                            if (MinecraftLauncher.isMinecraftPackage(packageName) && versionName != null && !versionName.isEmpty()) {
                     return "Minecraft_" + versionName;
                             }
                         }

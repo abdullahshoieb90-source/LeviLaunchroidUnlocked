@@ -6,10 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 
 public class PlayStoreValidator {
-    private static final String[] MINECRAFT_PACKAGES = {
-    "com.mojang.minecraftpe",
-    "com.mojang.minecraftpet1"
-};
+    private static final String[] MINECRAFT_PACKAGES = org.levimc.launcher.core.minecraft.MinecraftLauncher.MC_PACKAGE_NAMES;
     private static final String PLAY_STORE_INSTALLER = "com.android.vending";
 
     public static boolean isMinecraftFromPlayStore(Context context) {
