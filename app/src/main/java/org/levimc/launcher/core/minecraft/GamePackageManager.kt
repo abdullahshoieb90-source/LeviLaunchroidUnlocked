@@ -31,7 +31,7 @@ class GamePackageManager private constructor(
     private val applicationInfo: ApplicationInfo
 
     private val knownPackages = arrayOf(
-    MinecraftLauncher.MC_PACKAGE_NAMES,
+    MinecraftLauncher.MC_PACKAGE_NAME,
     "com.mojang.minecraftpet1"
 )
     private val requiredLibs = arrayOf(
@@ -72,7 +72,7 @@ class GamePackageManager private constructor(
         )
         
         if (version != null && !version.isInstalled) {
-            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(version, MinecraftLauncher.MC_PACKAGE_NAMES)
+            applicationInfo = MinecraftLauncher(context).createFakeApplicationInfo(version, MinecraftLauncher.MC_PACKAGE_NAME)
             nativeLibDir = applicationInfo.nativeLibraryDir
         } else {
             applicationInfo = packageContext.applicationInfo
