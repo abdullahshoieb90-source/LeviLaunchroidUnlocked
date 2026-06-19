@@ -18,8 +18,10 @@ import java.util.ArrayList;
 public class MinecraftLauncher {
     private static final String TAG = "MinecraftLauncher";
     private final Context context;
-    public static final String MC_PACKAGE_NAME = "com.mojang.minecraftpe";
-    public static final String MC_PACKAGE_NAME = "com.mojang.minecraftpet1";
+    public static final String[] MC_PACKAGE_NAMES = {
+        "com.mojang.minecraftpe",
+        "com.mojang.minecraftpet1"
+};
     public static final String EXTRA_GAME_VERSION = "org.levimc.launcher.extra.GAME_VERSION";
     public static final String EXTRA_STORAGE_PROFILE_ID = "org.levimc.launcher.extra.STORAGE_PROFILE_ID";
     public static final String EXTRA_STORAGE_FILES_DIR = "org.levimc.launcher.extra.STORAGE_FILES_DIR";
